@@ -533,7 +533,7 @@
         <h2>Deixe seu contato e ajude a moldar o laboratório.</h2>
         <p>Sem compromisso de compra — só para avisar quando o Claudião - Eletrônica abrir e, se fizer sentido, entender melhor sua necessidade de manutenção antes disso.</p>
       </div>
-      <form name="interesse-clauddiao" method="POST" data-netlify="true" action="/">
+      <form name="interesse-clauddiao" method="POST" data-netlify="true" id="form-interesse">
         <input type="hidden" name="form-name" value="interesse-clauddiao" />
         <div class="field">
           <label for="nome">Nome</label>
@@ -555,9 +555,53 @@
           <label for="interesse">Que equipamento você precisa manter ou já teve falha? (opcional)</label>
           <textarea id="interesse" name="interesse"></textarea>
         </div>
-        <button type="submit" class="btn">Quero ser avisado</button>
-        <span class="form-note">Formulário pronto para publicação na Netlify (atributo data-netlify já incluso). Em outra hospedagem, troque por um serviço de formulário equivalente.</span>
+        <button type="submit" class="btn" id="form-submit-btn">Quero ser avisado</button>
+        <span class="form-note" id="form-status"></span>
       </form>
+      <script>
+        (function () {
+          var form = document.getElementById('form-interesse');
+          var btn = document.getElementById('form-submit-btn');
+          var status = document.getElementById('form-status');
+
+          function encode(data) {
+            return Object.keys(data)
+              .map(function (key) { return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]); })
+              .join('&');
+          }
+
+          form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+            status.textContent = '';
+
+            var formData = new FormData(form);
+            var payload = {};
+            formData.forEach(function (value, key) { payload[key] = value; });
+
+            fetch('/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: encode(payload)
+            })
+              .then(function () {
+                form.reset();
+                form.style.display = 'none';
+                status.style.display = 'block';
+                status.style.color = 'var(--copper-bright)';
+                status.style.fontSize = '0.95rem';
+                status.textContent = 'Recebemos seu contato. Assim que o laboratório abrir, avisamos por e-mail.';
+              })
+              .catch(function () {
+                btn.disabled = false;
+                btn.textContent = 'Quero ser avisado';
+                status.style.color = '#d98c6b';
+                status.textContent = 'Não foi possível enviar agora. Tente novamente em instantes.';
+              });
+          });
+        })();
+      </script>
     </div>
   </div>
 </section>
